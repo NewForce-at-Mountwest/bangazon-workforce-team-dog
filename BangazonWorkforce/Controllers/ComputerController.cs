@@ -70,6 +70,34 @@ namespace BangazonWorkforce.Controllers
         // GET: Computer/Details/5
         public ActionResult Details(int id)
         {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                        SELECT
+                            Id, Make, Manufacturer, PurchaseDate, DecomissionDate
+                        FROM Computer
+                        WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    Computer computer = null;
+
+                    if (reader.Read())
+                    {
+                        computer = new Computer
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Make = reader.GetString(reader.GetOrdinal("Make")),
+                            Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer")),
+                        };
+                    }
+                    reader.Close();
+                    return View(computer);
+                }
+            }
             return View();
         }
 
@@ -130,6 +158,7 @@ namespace BangazonWorkforce.Controllers
         }
 
         // GET: Computer/Delete/5
+        //conditonal only delete computer if it has no assign date in the computeremployee table
         public ActionResult Delete(int id)
         {
             return View();
