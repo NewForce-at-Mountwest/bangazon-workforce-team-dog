@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using BangazonWorkforce.Models;
+using BangazonWorkforce.Models.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -83,25 +84,42 @@ namespace BangazonWorkforce.Controllers
         // GET: Employees/Create
         public ActionResult Create()
         {
-            return View();
+            // Create a new instance of a CreateStudentViewModel
+            // If we want to get all the cohorts, we need to use the constructor that's expecting a connection string. 
+            // When we create this instance, the constructor will run and get all the cohorts.
+            CreateEmployeeViewModel employeeViewModel = new CreateEmployeeViewModel(_config.GetConnectionString("DefaultConnection"));
+
+            // Once we've created it, we can pass it to the view
+            return View(employeeViewModel);
         }
 
         // POST: Employees/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add insert logic here
+        public async Task<ActionResult> Create(CreateEmployeeViewModel model)
+        {                      
+           
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"INSERT INTO Employee
+                ( FirstName, LastName, DepartmentId, isSupervisor )
+                VALUES
+                ( @firstName, @lastName, @departmentId, @isSupervisor )";
+                        cmd.Parameters.Add(new SqlParameter("@firstName", model.employee.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@lastName", model.employee.LastName));                        
+                        cmd.Parameters.Add(new SqlParameter("@departmentId", model.employee.DepartmentId));
+                        cmd.Parameters.Add(new SqlParameter("@isSupervisor", model.employee.IsSuperVisor));
+                        cmd.ExecuteNonQuery();
 
-                return RedirectToAction(nameof(Index));
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
-            catch
-            {
-                return View();
-            }
-        }
+           
+        
 
         // GET: Employees/Edit/5
         public ActionResult Edit(int id)
