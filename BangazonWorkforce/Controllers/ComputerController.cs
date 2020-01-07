@@ -70,6 +70,7 @@ namespace BangazonWorkforce.Controllers
         // GET: Computer/Details/5
         public ActionResult Details(int id)
         {
+//query the database for an individual computer 
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
@@ -85,7 +86,7 @@ namespace BangazonWorkforce.Controllers
 
                     Computer computer = null;
                     DateTime? NullDateTime = null;
-
+//create instance of computer
                     if (reader.Read())
                     {
                         computer = new Computer
@@ -95,10 +96,10 @@ namespace BangazonWorkforce.Controllers
                             Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer")),
                             PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
                             DecomissionDate = reader.IsDBNull(reader.GetOrdinal("DecomissionDate")) ? NullDateTime : reader.GetDateTime(reader.GetOrdinal("DecomissionDate"))
-
                         };
                     }
                     reader.Close();
+                    //return the details view of a single computer with its details
                     return View(computer);
                 }
             }
