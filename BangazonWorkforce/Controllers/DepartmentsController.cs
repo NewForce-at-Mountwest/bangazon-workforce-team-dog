@@ -60,6 +60,7 @@ namespace BangazonWorkforce.Controllers
                             Employees = new List<Employee>()
                            
                         };
+                        //If the reader picks up nothing in the Employee List, Add the Employees
                         if (!reader.IsDBNull(reader.GetOrdinal("Employee Id"))) {
                             Employee employee = new Employee()
                             {
@@ -68,7 +69,6 @@ namespace BangazonWorkforce.Controllers
                                 LastName = reader.GetString(reader.GetOrdinal("LastName")),
                                 DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId"))
                             };
-
                             if (departments.Any(d => d.Id == department.Id))
                             {
                                 Department departmentToReference = departments.Where(d => d.Id == department.Id).FirstOrDefault();
@@ -84,6 +84,7 @@ namespace BangazonWorkforce.Controllers
                                 departments.Add(department);
                             }
                         }
+                        //Add A Department of 0 to an new employee if not assigned to one so the App doesnt break
                         else if (department.Employees.Count() == 0)
                         {
                             departments.Add(department);
@@ -105,25 +106,33 @@ namespace BangazonWorkforce.Controllers
 
         // GET: Department/Create
         public ActionResult Create()
-        {
-            return View();
-        }
+            {
+                return View();
+            }
 
         // POST: Department/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(Department department)
         {
-            try
-            {
-                // TODO: Add insert logic here
+               using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"INSERT INTO Department
+                                            (Name, Budget)
+                                            VALUES
+                                            (@name, @budget)";
+                        cmd.Parameters.Add(new SqlParameter("@name", department.Name));
+                        cmd.Parameters.Add(new SqlParameter("@budget", department.Budget));
+                       
+                        cmd.ExecuteNonQuery();
 
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+                    return RedirectToAction(nameof(Index));
+                    }
+                }
+
         }
 
         // GET: Department/Edit/5
@@ -139,7 +148,7 @@ namespace BangazonWorkforce.Controllers
         {
             try
             {
-                // TODO: Add update logic here
+                
 
                 return RedirectToAction(nameof(Index));
             }
