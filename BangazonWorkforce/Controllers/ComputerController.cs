@@ -166,20 +166,49 @@ namespace BangazonWorkforce.Controllers
         //conditonal only delete computer if it has no assign date in the computeremployee table
         public ActionResult Delete(int id)
         {
-            return View();
-        }
+            // query database table computeremployee for any computerId with the id of the computer you wish to delete
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Computer.Id AS 'Computer Id' ComputerEmployee.ComputerId 
+                    FROM Computer LEFT JOIN ComputerEmployee 
+                    ON ComputerEmployee.ComputerId = Computer.Id WHERE ComputerId = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = cmd.ExecuteReader();
 
+                    //if query returns null then execute the following delete
+                   // if (!reader.IsDBNull(reader.GetOrdinal("ComputerId")))
+                    //get computer to delete if null 
+                     return View(); 
+                }
+            }
+        }
         // POST: Computer/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Delete(int id, Computer computer)
         {
+
             try
             {
-                // TODO: Add delete logic here
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                   
+                        {
+                            cmd.CommandText = @"DELETE FROM Computer WHERE Id = @id";
+                            cmd.Parameters.Add(new SqlParameter("@id", id));
 
-                return RedirectToAction(nameof(Index));
-            }
+                            int rowsAffected = cmd.ExecuteNonQuery();
+                        }
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
+            //else do nothing maybe an alert?? 
+
             catch
             {
                 return View();
