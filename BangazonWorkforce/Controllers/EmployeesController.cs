@@ -94,6 +94,8 @@ namespace BangazonWorkforce.Controllers
                             c.Id,
                             c.Make,
                             c.Manufacturer,
+                            ce.Id AS 'Computer Employee Id',
+                            ce.UnassignDate,
                             tp.Name
                         FROM Employee e            
                         FULL JOIN Department d ON e.DepartmentId = d.Id
@@ -101,16 +103,18 @@ namespace BangazonWorkforce.Controllers
                         FULL JOIN Computer c ON ce.ComputerId = c.Id
                         FULL JOIN EmployeeTraining et ON et.EmployeeId = e.Id
                         FULL JOIN TrainingProgram tp ON et.TrainingProgramId = tp.Id
-                        WHERE ce.UnassignDate is NULL
-                        AND e.Id = @id";
+                        WHERE e.Id = @id
+                        AND ce.UnassignDate is NULL
+                        ";
 
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = cmd.ExecuteReader();
 
                     Employee employee = new Employee();
 
-                    if (reader.Read())
+                    while (reader.Read())
                     {
+
                         employee = new Employee
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
@@ -122,13 +126,18 @@ namespace BangazonWorkforce.Controllers
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                                 Name = reader.GetString(reader.GetOrdinal("Name")),
-                            },
-                            CurrentComputer = new Computer()
-                            { 
+                            }
+                        };
+                        if (!reader.IsDBNull(reader.GetOrdinal("Computer Employee Id")))
+                        {
+                            employee.CurrentComputer = new Computer()
+                            {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                                 Make = reader.GetString(reader.GetOrdinal("Make")),
                                 Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer")),
-                            },
+                            };
+                         }
+                        
                             //TrainingPrograms = new List<TrainingProgram>()
                             //{
                             //    Id = reader.GetInt32(reader.GetOrdinal("Id")),
@@ -136,7 +145,7 @@ namespace BangazonWorkforce.Controllers
 
                             //}
 
-                        };
+                        
                     }
                     reader.Close();
 
