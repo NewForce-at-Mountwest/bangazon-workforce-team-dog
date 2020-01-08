@@ -166,16 +166,16 @@ namespace BangazonWorkforce.Controllers
         //conditonal only delete computer if it has no assign date in the computeremployee table
         public ActionResult Delete(int id)
         {
-          // query database for computer you wish to delete with 
+          // query database for computer you wish to delete with employee assigned if applicable
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"SELECT c.Id AS 'Computer Id', c.Make, c.Manufacturer, c.PurchaseDate,
-                    c.DecomissionDate, ce.ComputerId, ce.EmployeeId, e.Id 
+                    c.DecomissionDate, ce.Id AS 'Employee Computer', ce.ComputerId, ce.EmployeeId, e.Id AS 'Employee Id'
                     FROM Computer c LEFT JOIN ComputerEmployee ce
-                    ON ce.ComputerId = c.Id LEFT JOIN Employee e
+                    ON ce.ComputerId  = c.Id LEFT JOIN Employee e
                     ON ce.EmployeeId = e.Id WHERE c.Id = @id";
 
                     cmd.Parameters.Add(new SqlParameter("@id", id));
@@ -183,21 +183,24 @@ namespace BangazonWorkforce.Controllers
 
                     Computer computer = null;
                     DateTime? NullDateTime = null;
-                   
+
                     //create instance of computer and a list of assigned employees
-                    if (reader.Read())
+                   while (reader.Read())
                     {
                         computer = new Computer
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Id = reader.GetInt32(reader.GetOrdinal("ComputerId")),
                             Make = reader.GetString(reader.GetOrdinal("Make")),
                             Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer")),
                             PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
                             DecomissionDate = reader.IsDBNull(reader.GetOrdinal("DecomissionDate")) ? NullDateTime : reader.GetDateTime(reader.GetOrdinal("DecomissionDate"))
                         };
-
+                        //If ComputerEmployee.Id is null assign boolean
+                       // if (!reader.IsDBNull(reader.GetOrdinal("Employee Computer")))
+                        { };
                     }
-                    return View(); 
+                    return View();
+
                 }
             }
         }
