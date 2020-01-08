@@ -38,14 +38,14 @@ namespace BangazonWorkforce.Controllers
                 {
                     cmd.CommandText = @"
                      SELECT d.Id AS 'Department Id',
-                d.Name,
-                d.Budget,
-                e.Id AS 'Employee Id',
-                e.FirstName,
-                e.LastName,
-                e.DepartmentId
-               FROM Department d
-                LEFT JOIN Employee e ON e.DepartmentId = d.Id
+                     d.Name,
+                     d.Budget,
+                     e.Id AS 'Employee Id',
+                     e.FirstName,
+                     e.LastName,
+                     e.DepartmentId
+                     FROM Department d
+                     LEFT JOIN Employee e ON e.DepartmentId = d.Id
                 ";
                     SqlDataReader reader = cmd.ExecuteReader();
 
@@ -58,7 +58,7 @@ namespace BangazonWorkforce.Controllers
                             Name = reader.GetString(reader.GetOrdinal("Name")),
                             Budget = reader.GetInt32(reader.GetOrdinal("Budget")),
                             Employees = new List<Employee>()
-                           
+
                         };
                         //If the reader picks up nothing in the Employee List, Add the Employees
                         if (!reader.IsDBNull(reader.GetOrdinal("Employee Id"))) {
@@ -101,8 +101,61 @@ namespace BangazonWorkforce.Controllers
         // GET: Department/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @" SELECT d.Id AS 'Department Id',
+                                         d.Name,
+                                         d.Budget,
+                                         e.Id AS 'Employee Id',
+                                         e.FirstName,
+                                         e.LastName,
+                                         e.DepartmentId
+                                         FROM Department d
+                                         FULL JOIN Employee e ON e.DepartmentId = d.Id
+                                         WHERE d.Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    Department department = null;
+
+                    while (reader.Read())
+                    {
+                        if (department == null)
+                        {
+                            department = new Department
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Department Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Budget = reader.GetInt32(reader.GetOrdinal("Budget")),
+                                Employees = new List<Employee>()
+
+                            };
+                        };
+                        if (!reader.IsDBNull(reader.GetOrdinal("Employee Id")))
+                        {
+                            Employee employee = new Employee()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Employee Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId"))
+                            };
+
+                            department.Employees.Add(employee);
+
+                        }
+                    }
+                        
+                            reader.Close();
+                            return View(department);
+                    
+                }
+            }
         }
+    
 
         // GET: Department/Create
         public ActionResult Create()
