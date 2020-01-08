@@ -16,6 +16,8 @@ namespace BangazonWorkforce.Models
         [Display(Name = "Last Name")]
         public string LastName { get; set; }
         public int DepartmentId { get; set; }
+
+        [Display(Name = "Supervisor?")]
         public bool IsSuperVisor { get; set; }
 
         [Display(Name = "Department")]
@@ -26,6 +28,8 @@ namespace BangazonWorkforce.Models
 
         [Display(Name="Training Programs")]
         public List<TrainingProgram> TrainingPrograms { get; set; } = new List<TrainingProgram>();
+
+       
 
 
     }
