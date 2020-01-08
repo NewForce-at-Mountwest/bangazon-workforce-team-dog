@@ -43,7 +43,7 @@
         </dd>
     </dl>
 
-    @{ if (Model.IsAssigned == true)
+    @{ if (!Model.IsAssigned == true)
         {
     <form asp-action="Delete">
         <input type="submit" value="Delete" class="btn btn-danger" /> |
@@ -51,6 +51,7 @@
     </form>}
         else
         {
-    <h3>Unable to Delete this computer!</h3>}
+    <h3>Unable to Delete this computer!</h3>
+    <a asp-action="Index">Back to List</a>}
         }
 </div>
