@@ -86,7 +86,9 @@ namespace BangazonWorkforce.Controllers
 
                     Computer computer = null;
                     DateTime? NullDateTime = null;
+
 //create instance of computer
+
                     if (reader.Read())
                     {
                         computer = new Computer
@@ -174,32 +176,36 @@ namespace BangazonWorkforce.Controllers
                 {
                     cmd.CommandText = @"SELECT c.Id AS 'Computer Id', c.Make, c.Manufacturer, c.PurchaseDate,
                     c.DecomissionDate, ce.Id AS 'Employee Computer', ce.ComputerId, ce.EmployeeId, e.Id AS 'Employee Id'
-                    FROM Computer c LEFT JOIN ComputerEmployee ce
-                    ON ce.ComputerId  = c.Id LEFT JOIN Employee e
-                    ON ce.EmployeeId = e.Id WHERE c.Id = @id";
+                    FROM Computer c
+                    LEFT JOIN ComputerEmployee ce
+                    ON ce.ComputerId  = c.Id 
+                    LEFT JOIN Employee e
+                    ON ce.EmployeeId = e.Id 
+                    WHERE c.Id = @id";
 
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = cmd.ExecuteReader();
 
-                    Computer computer = null;
+                   
                     DateTime? NullDateTime = null;
-
+                    Computer computer = new Computer();
                     //create instance of computer and a list of assigned employees
-                   while (reader.Read())
+                   if (reader.Read())
                     {
-                        computer = new Computer
+                       computer = new Computer
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("ComputerId")),
+                            Id = reader.GetInt32(reader.GetOrdinal("Computer Id")),
                             Make = reader.GetString(reader.GetOrdinal("Make")),
                             Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer")),
                             PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
                             DecomissionDate = reader.IsDBNull(reader.GetOrdinal("DecomissionDate")) ? NullDateTime : reader.GetDateTime(reader.GetOrdinal("DecomissionDate"))
                         };
                         //If ComputerEmployee.Id is null assign boolean
-                       // if (!reader.IsDBNull(reader.GetOrdinal("Employee Computer")))
-                        { };
+                        if (!reader.IsDBNull(reader.GetOrdinal("Employee Computer")))
+                        { computer.IsAssigned = true; }
                     }
-                    return View();
+                    reader.Close();
+                    return View(computer);
 
                 }
             }

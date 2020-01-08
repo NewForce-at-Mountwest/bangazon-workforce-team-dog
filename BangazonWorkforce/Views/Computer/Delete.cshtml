@@ -42,9 +42,15 @@
             @Html.DisplayFor(model => model.Manufacturer)
         </dd>
     </dl>
-    
+
+    @{ if (Model.IsAssigned == true)
+        {
     <form asp-action="Delete">
         <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-action="Index">Back to List</a>
-    </form>
+    </form>}
+        else
+        {
+    <h3>Unable to Delete this computer!</h3>}
+        }
 </div>
