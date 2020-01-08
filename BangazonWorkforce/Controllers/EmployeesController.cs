@@ -101,7 +101,8 @@ namespace BangazonWorkforce.Controllers
                         FULL JOIN Computer c ON ce.ComputerId = c.Id
                         FULL JOIN EmployeeTraining et ON et.EmployeeId = e.Id
                         FULL JOIN TrainingProgram tp ON et.TrainingProgramId = tp.Id
-                        WHERE ce.UnassignDate is NULL";
+                        WHERE ce.UnassignDate is NULL
+                        AND e.Id = @id";
 
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = cmd.ExecuteReader();
