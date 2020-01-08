@@ -166,22 +166,38 @@ namespace BangazonWorkforce.Controllers
         //conditonal only delete computer if it has no assign date in the computeremployee table
         public ActionResult Delete(int id)
         {
-            // query database table computeremployee for any computerId with the id of the computer you wish to delete
+          // query database for computer you wish to delete with 
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT Computer.Id AS 'Computer Id' ComputerEmployee.ComputerId 
-                    FROM Computer LEFT JOIN ComputerEmployee 
-                    ON ComputerEmployee.ComputerId = Computer.Id WHERE ComputerId = @id";
+                    cmd.CommandText = @"SELECT c.Id AS 'Computer Id', c.Make, c.Manufacturer, c.PurchaseDate,
+                    c.DecomissionDate, ce.ComputerId, ce.EmployeeId, e.Id 
+                    FROM Computer c LEFT JOIN ComputerEmployee ce
+                    ON ce.ComputerId = c.Id LEFT JOIN Employee e
+                    ON ce.EmployeeId = e.Id WHERE c.Id = @id";
+
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = cmd.ExecuteReader();
 
-                    //if query returns null then execute the following delete
-                   // if (!reader.IsDBNull(reader.GetOrdinal("ComputerId")))
-                    //get computer to delete if null 
-                     return View(); 
+                    Computer computer = null;
+                    DateTime? NullDateTime = null;
+                   
+                    //create instance of computer and a list of assigned employees
+                    if (reader.Read())
+                    {
+                        computer = new Computer
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Make = reader.GetString(reader.GetOrdinal("Make")),
+                            Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer")),
+                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                            DecomissionDate = reader.IsDBNull(reader.GetOrdinal("DecomissionDate")) ? NullDateTime : reader.GetDateTime(reader.GetOrdinal("DecomissionDate"))
+                        };
+
+                    }
+                    return View(); 
                 }
             }
         }
@@ -207,7 +223,6 @@ namespace BangazonWorkforce.Controllers
                     }
                     return RedirectToAction(nameof(Index));
                 }
-            //else do nothing maybe an alert?? 
 
             catch
             {
