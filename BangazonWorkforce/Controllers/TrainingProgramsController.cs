@@ -53,6 +53,7 @@ namespace BangazonWorkforce.Controllers
                             EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
                             MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"))
                         };
+                        //If the Training Program has already happened, then dont show it on the list
                         DateTime timeRightNow = DateTime.Now;
                         if(trainingProgram.StartDate > timeRightNow){
                             trainingPrograms.Add(trainingProgram);
