@@ -134,6 +134,7 @@ namespace BangazonWorkforce.Controllers
 
                             };
                         };
+                        // If the Employee Id is coming back as nothing, add Employees to the Employee List
                         if (!reader.IsDBNull(reader.GetOrdinal("Employee Id")))
                         {
                             Employee employee = new Employee()
