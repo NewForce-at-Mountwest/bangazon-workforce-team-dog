@@ -175,7 +175,7 @@ namespace BangazonWorkforce.Controllers
                 {
                     cmd.CommandText = @"SELECT
                                         Id, Name, StartDate, EndDate, MaxAttendees
-                                        FROM Student
+                                        FROM TrainingProgram
                                         WHERE Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = cmd.ExecuteReader();
