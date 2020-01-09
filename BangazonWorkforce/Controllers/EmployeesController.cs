@@ -78,7 +78,89 @@ namespace BangazonWorkforce.Controllers
         // GET: Employees/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                        SELECT e.Id,
+                            e.FirstName,
+                            e.LastName,
+                            e.DepartmentId,
+                            e.isSupervisor,
+                            d.Name,
+                            c.Id,
+                            c.Make,
+                            c.Manufacturer,
+                            ce.Id AS 'Computer Employee Id',
+                            ce.UnassignDate,
+                            tp.Id AS 'Training Program Id',
+                            tp.Name AS 'Program Name'
+                        FROM Employee e            
+                        FULL JOIN Department d ON e.DepartmentId = d.Id
+                        FULL JOIN ComputerEmployee ce ON ce.EmployeeId = e.Id
+                        FULL JOIN Computer c ON ce.ComputerId = c.Id
+                        FULL JOIN EmployeeTraining et ON et.EmployeeId = e.Id
+                        FULL JOIN TrainingProgram tp ON et.TrainingProgramId = tp.Id
+                        WHERE e.Id = @id
+                        
+                        ";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    Employee employee = null ;
+
+                   
+
+                    while (reader.Read())
+                    {
+
+                        if (employee == null)
+                        {
+                            employee = new Employee
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                IsSuperVisor = reader.GetBoolean(reader.GetOrdinal("isSupervisor")),
+                                DepartmentId = reader.GetInt32(reader.GetOrdinal("Id")),
+                                CurrentDepartment = new Department()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                }
+                            };
+                        }
+                                                                          
+
+                        if (!reader.IsDBNull(reader.GetOrdinal("Computer Employee Id")) && reader.IsDBNull(reader.GetOrdinal("UnassignDate")))
+                                {
+                                    employee.CurrentComputer = new Computer()
+                                    {
+                                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                        Make = reader.GetString(reader.GetOrdinal("Make")),
+                                        Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer")),
+                                    };
+                                }
+                        if (!reader.IsDBNull(reader.GetOrdinal("Training Program Id")))
+                        {
+                            TrainingProgram trainingProgram = new TrainingProgram
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Program Name"))
+                            };
+                            employee.TrainingPrograms.Add(trainingProgram);
+                        }
+                    }
+                    reader.Close();
+
+
+                    return View(employee);
+                }
+            }
         }
 
         // GET: Employees/Create
