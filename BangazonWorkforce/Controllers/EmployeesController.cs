@@ -96,7 +96,8 @@ namespace BangazonWorkforce.Controllers
                             c.Manufacturer,
                             ce.Id AS 'Computer Employee Id',
                             ce.UnassignDate,
-                            tp.Name
+                            tp.Id AS 'Training Program Id',
+                            tp.Name AS 'Program Name'
                         FROM Employee e            
                         FULL JOIN Department d ON e.DepartmentId = d.Id
                         FULL JOIN ComputerEmployee ce ON ce.EmployeeId = e.Id
@@ -104,48 +105,55 @@ namespace BangazonWorkforce.Controllers
                         FULL JOIN EmployeeTraining et ON et.EmployeeId = e.Id
                         FULL JOIN TrainingProgram tp ON et.TrainingProgramId = tp.Id
                         WHERE e.Id = @id
-                        AND ce.UnassignDate is NULL
+                        
                         ";
 
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = cmd.ExecuteReader();
 
-                    Employee employee = new Employee();
+                    Employee employee = null ;
+
+                   
 
                     while (reader.Read())
                     {
 
-                        employee = new Employee
+                        if (employee == null)
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                            IsSuperVisor = reader.GetBoolean(reader.GetOrdinal("isSupervisor")),
-                            DepartmentId = reader.GetInt32(reader.GetOrdinal("Id")),
-                            CurrentDepartment = new Department()
+                            employee = new Employee
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                Name = reader.GetString(reader.GetOrdinal("Name")),
-                            }
-                        };
-                        if (!reader.IsDBNull(reader.GetOrdinal("Computer Employee Id")))
-                        {
-                            employee.CurrentComputer = new Computer()
-                            {
-                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                Make = reader.GetString(reader.GetOrdinal("Make")),
-                                Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                IsSuperVisor = reader.GetBoolean(reader.GetOrdinal("isSupervisor")),
+                                DepartmentId = reader.GetInt32(reader.GetOrdinal("Id")),
+                                CurrentDepartment = new Department()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                }
                             };
-                         }
-                        
-                            //TrainingPrograms = new List<TrainingProgram>()
-                            //{
-                            //    Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            //    Name = reader.GetString(reader.GetOrdinal("Name")),
+                        }
+                                                                          
 
-                            //}
-
-                        
+                        if (!reader.IsDBNull(reader.GetOrdinal("Computer Employee Id")) && reader.IsDBNull(reader.GetOrdinal("UnassignDate")))
+                                {
+                                    employee.CurrentComputer = new Computer()
+                                    {
+                                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                        Make = reader.GetString(reader.GetOrdinal("Make")),
+                                        Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer")),
+                                    };
+                                }
+                        if (!reader.IsDBNull(reader.GetOrdinal("Training Program Id")))
+                        {
+                            TrainingProgram trainingProgram = new TrainingProgram
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Program Name"))
+                            };
+                            employee.TrainingPrograms.Add(trainingProgram);
+                        }
                     }
                     reader.Close();
 
