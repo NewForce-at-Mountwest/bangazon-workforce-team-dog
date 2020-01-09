@@ -40,7 +40,7 @@ namespace BangazonWorkforce.Models.ViewModels
             Employees = GetAllEmployees()
                 .Select(employee => new SelectListItem()
                 {
-                    Text = employee.FirstName + employee.LastName,
+                    Text = employee.FirstName + " " + employee.LastName,
                     Value = employee.Id.ToString()
 
                 })
@@ -69,7 +69,7 @@ namespace BangazonWorkforce.Models.ViewModels
                     List<Employee> employees = new List<Employee>();
                     while (reader.Read())
                     {
-                        employees.Add(new Employer
+                        employees.Add(new Employee
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
@@ -79,7 +79,7 @@ namespace BangazonWorkforce.Models.ViewModels
 
                     reader.Close();
 
-                    return departments;
+                    return employees;
                 }
             }
         }

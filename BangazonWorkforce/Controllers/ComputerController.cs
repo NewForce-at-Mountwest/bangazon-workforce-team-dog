@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using BangazonWorkforce.Models;
-
+using BangazonWorkforce.Models.ViewModels;
 
 namespace BangazonWorkforce.Controllers
 {
@@ -111,13 +111,15 @@ namespace BangazonWorkforce.Controllers
         // GET: Computer/Create
         public ActionResult Create()
         {
-            return View();
+            CreateComputerViewModel computerViewModel = new CreateComputerViewModel(_config.GetConnectionString("DefaultConnection"));
+
+            return View(computerViewModel);
         }
 
         // POST: Computer/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Computer computer)
+        public ActionResult Create(CreateComputerViewModel computerViewModel)
         {
             {
                 using (SqlConnection conn = Connection)
@@ -126,16 +128,31 @@ namespace BangazonWorkforce.Controllers
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
                         cmd.CommandText = @"INSERT INTO Computer
-                ( Make, Manufacturer, PurchaseDate )
+                ( Make, Manufacturer, PurchaseDate)
                 VALUES
-                ( @Make, @Manufacturer, @PurchaseDate )";
-                        cmd.Parameters.Add(new SqlParameter("@Make", computer.Make));
-                        cmd.Parameters.Add(new SqlParameter("@Manufacturer", computer.Manufacturer));
-                        cmd.Parameters.Add(new SqlParameter("@PurchaseDate", computer.PurchaseDate));
+                ( @Make, @Manufacturer, @PurchaseDate)";
+
+                        cmd.Parameters.Add(new SqlParameter("@Make", computerViewModel.computer.Make));
+                        cmd.Parameters.Add(new SqlParameter("@Manufacturer", computerViewModel.computer.Manufacturer));
+                        cmd.Parameters.Add(new SqlParameter("@PurchaseDate", computerViewModel.computer.PurchaseDate));
 
                         cmd.ExecuteNonQuery();
 
+// if an employee is assigned insert an entry into the computeremployee table
+
+                        cmd.CommandText = @"INSERT INTO ComputerEmployee
+                (ComputerId, EmployeeId, AssignDate)
+                 VALUES
+                  (@ComputerId, @EmployeeId, @AssignDate) ";
+
+                        cmd.Parameters.Add(new SqlParameter("@ComputerId", computerViewModel.computer.Id));
+                        cmd.Parameters.Add(new SqlParameter("@EmployeeId", computerViewModel.Id));
+                        cmd.Parameters.Add(new SqlParameter("@AssignDate", DateTime.Now));
+
+                        cmd.ExecuteNonQuery();
                         return RedirectToAction(nameof(Index));
+                    
+                                      
                     }
                 }
             }
