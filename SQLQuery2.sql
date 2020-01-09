@@ -1,0 +1,1 @@
+﻿SELECT Computer.Id, Computer.Make, Computer.Manufacturer, Computer.PurchaseDate, Computer.DecomissionDate FROM Computer

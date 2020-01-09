@@ -21,5 +21,6 @@ namespace BangazonWorkforce.Models
         public string Manufacturer { get; set; }
 
         public Employee CurrentEmployee { get; set; }
+        public bool IsAssigned { get; set; }
     }
 }
