@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +16,9 @@ namespace BangazonWorkforce.Models.ViewModels
 
         // An individual computer. When we render the form (i.e. make a GET request to computer/Create) this will be null. When we submit the form (i.e. make a POST request to computers/Create), this will hold the data from the form.
         public Computer computer { get; set; }
+        // An individual employee to assign computer to
+        [Display(Name = "Employee To Assign")]
+        public Employee assignedEmployee { get; set; }
 
         // Connection to the database
         protected string _connectionString;
