@@ -240,7 +240,36 @@ namespace BangazonWorkforce.Controllers
         // GET: TrainingPrograms/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT
+                                        Id, Name, StartDate, EndDate, MaxAttendees
+                                        FROM TrainingProgram
+                                        WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    TrainingProgram trainingProgram = null;
+
+                    if(reader.Read())
+                    {
+                        trainingProgram = new TrainingProgram
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
+                            StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+                            EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
+                            MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"))
+                        };
+                    }
+                    reader.Close();
+
+                    return View(trainingProgram);
+                }
+            }
         }
 
         // POST: TrainingPrograms/Delete/5
@@ -250,7 +279,20 @@ namespace BangazonWorkforce.Controllers
         {
             try
             {
-                // TODO: Add delete logic here
+                using(SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using(SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"DELETE FROM EmployeeTraining
+                                            WHERE trainingProgramId = @id
+                                            DELETE FROM TrainingProgram
+                                            WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                    }
+                }
 
                 return RedirectToAction(nameof(Index));
             }
